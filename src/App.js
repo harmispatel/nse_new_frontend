@@ -19,8 +19,37 @@ import AdminBankNifty from "./pages/AdminBankNifty";
 import AdminNifty from "./pages/AdminNifty";
 import Users from "./admin/Users";
 import Eror404 from "./pages/Eror404";
+import axios from "axios";
+import { useEffect, useState } from "react";
 
 function App() {
+  const [updateNifty, setUpdateNifty] = useState([]);
+  const [updateStock, setUpdateStock] = useState([]);
+
+  const updateNiftyData = () => {
+    axios
+      .get("http://192.168.1.116/shareMarket/index.php/api/niftyJsonUpdate")
+      .then((res) => setUpdateNifty(res.data))
+      .catch((err) => console.log(err));
+  };
+
+  const updateStockData = () => {
+    axios
+      .get("http://192.168.1.116/shareMarket/index.php/api/stokListUpdate")
+      .then((res) => setUpdateStock(res.data))
+      .catch((err) => console.log(err));
+  };
+
+  useEffect(() => {
+    updateNiftyData();
+    updateStockData();
+    const interval = setInterval(() => {
+      updateNiftyData();
+      updateStockData();
+    }, 180000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="App">
       <div>
@@ -40,7 +69,10 @@ function App() {
               <Route path="/admin-live" element={<LiveNse />} />
               <Route path="/admin-history" element={<HistoryData />} />
               <Route path="/admin-settings" element={<SettingsNse />} />
-              <Route path="/admin-accountdetails" element={<AccountDetails />} />
+              <Route
+                path="/admin-accountdetails"
+                element={<AccountDetails />}
+              />
               <Route path="/admin-users" element={<Users />} />
               <Route path="/reset-password" element={<ChangePasswordForm />} />
             </Route>

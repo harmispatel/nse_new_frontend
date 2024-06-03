@@ -1,39 +1,42 @@
 import React from "react";
 import NavbarMenu from "../components/Navbar";
 import moment from "moment/moment";
-import { LOCAL_STOCK_API_URL, PCR_VALUE_API } from "../api/LocalApi";
+import {
+  LOCAL_STOCK_API_URL,
+  PCR_VALUE_API,
+  LOCAL_BASE_STOCK_URL,
+} from "../api/LocalApi";
 import { Button, Col, Row, Spin } from "antd";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Table, Input, Tag, Switch, Select as SelectAntd } from "antd";
 import Model from "./Model";
-import './style.css'
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import "./style.css";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const { Option } = SelectAntd;
 
 function PcrValues() {
   const [getdata, setGet_data] = useState([]);
-  const [fruit, setFruit] = useState('');
+  const [fruit, setFruit] = useState("");
 
   const [search_data, setSearch_data] = useState([]);
-  const [loading,setLoading] = useState(true)
+  const [loading, setLoading] = useState(true);
   const { Search } = Input;
   const [localapi, setLocalApi] = useState(localStorage.getItem("Local"));
-
 
   useEffect(() => {
     document.title = "Stock List";
     stock_data();
   }, []);
-  
+
   const setLocal = () => {
-    if (localapi === 'true') {
-      localStorage.setItem("Local", 'false');
-      setLocalApi('false')
-    }else{ 
-      localStorage.setItem("Local", 'true');
-      setLocalApi('true')
+    if (localapi === "true") {
+      localStorage.setItem("Local", "false");
+      setLocalApi("false");
+    } else {
+      localStorage.setItem("Local", "true");
+      setLocalApi("true");
     }
   };
 
@@ -41,20 +44,22 @@ function PcrValues() {
     setFruit(e);
   };
 
-  const updatePcrHandle = () => { 
-    notify()
-    axios.get(LOCAL_STOCK_API_URL + '/pcrUpdate/')
-    .then((response) => { 
-      console.log(response);
-    }).catch(error => { 
-      notifyError()
-    })
-  }
+  const updatePcrHandle = () => {
+    notify();
+    axios
+      .get(LOCAL_STOCK_API_URL + "/pcrUpdate/")
+      .then((response) => {
+        console.log(response);
+      })
+      .catch((error) => {
+        notifyError();
+      });
+  };
 
   const stock_data = async () => {
-    await axios.get(PCR_VALUE_API).then((responses) => {
-      setLoading(false)
-      setGet_data(responses.data.data);
+    await axios.get(LOCAL_BASE_STOCK_URL).then((responses) => {
+      setLoading(false);
+      setGet_data(responses.data.data.data);
     });
   };
 
@@ -82,7 +87,15 @@ function PcrValues() {
       sorter: (a, b) => a.pcr - b.pcr,
       render: (text, record) => {
         return (
-          <Tag color={record.PE === true ? "error" : (record.PE_CE_diffrent === true ? "success" : '')}>
+          <Tag
+            color={
+              record.PE === true
+                ? "error"
+                : record.PE_CE_diffrent === true
+                ? "success"
+                : ""
+            }
+          >
             {text}
           </Tag>
         );
@@ -96,20 +109,18 @@ function PcrValues() {
       render: (text, record) => {
         return moment(text).format("DD/MM/YYYY HH:mm:ss");
       },
-
     },
     {
       title: "Action",
       render: (_, record) =>
         getdata.length >= 1 ? (
           <>
-
             <Button
               style={{ margin: "15px" }}
-              onClick={() => { 
-                setFruit(record.name)
-                showModal()
-                }}
+              onClick={() => {
+                setFruit(record.name);
+                showModal();
+              }}
             >
               Get Data
             </Button>
@@ -119,12 +130,11 @@ function PcrValues() {
             >
               Update
             </Button> */}
-            
           </>
         ) : null,
     },
   ];
-    const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -135,23 +145,29 @@ function PcrValues() {
   const handleCancel = () => {
     setIsModalOpen(false);
   };
-  const [pagination, setPagination] = useState({ current: 1, total: 0, pageSize: 30  });
+  const [pagination, setPagination] = useState({
+    current: 1,
+    total: 0,
+    pageSize: 30,
+  });
   const handleTableChange = (value) => {
-    setPagination(value)
-  }
+    setPagination(value);
+  };
 
-  const notify = () => toast.info('Update will take some time', {
-                                  position: "top-right",
-                                  autoClose: 3000,
-                                  hideProgressBar: false,
-                                  closeOnClick: true,
-                                  pauseOnHover: true,
-                                  draggable: true,
-                                  progress: undefined,
-                                  theme: "light",
-                                  });
+  const notify = () =>
+    toast.info("Update will take some time", {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
 
-    const notifyError = () => toast.error('Please check local URL', {
+  const notifyError = () =>
+    toast.error("Please check local URL", {
       position: "top-right",
       autoClose: 5000,
       hideProgressBar: false,
@@ -160,9 +176,8 @@ function PcrValues() {
       draggable: true,
       progress: undefined,
       theme: "light",
-      });
-    
-  
+    });
+
   return (
     <>
       <NavbarMenu />
@@ -175,27 +190,27 @@ function PcrValues() {
         namess={fruit}
         localapi={localapi}
       />
-      
+
       <Row>
         <Col offset={15} span={3}>
-
-          <div style={{ marginTop: '15px'}}>
-            Local: <Switch
+          <div style={{ marginTop: "15px" }}>
+            Local:{" "}
+            <Switch
               onChange={setLocal}
-              checked={localapi === 'true' ? true : false}
-              />
+              checked={localapi === "true" ? true : false}
+            />
           </div>
 
-            {
-              localapi === 'true' &&
-              <Button onClick={updatePcrHandle} style={{ marginTop: "20px"}}>Update all</Button>
-            }
-
+          {localapi === "true" && (
+            <Button onClick={updatePcrHandle} style={{ marginTop: "20px" }}>
+              Update all
+            </Button>
+          )}
         </Col>
-        
+
         <Col span={6}>
-            {/* <FormControl > */}
-              {/* <InputLabel id="demo-simple-select-label">Stock Name</InputLabel>
+          {/* <FormControl > */}
+          {/* <InputLabel id="demo-simple-select-label">Stock Name</InputLabel>
                 <Select
                   value={fruit ?? ""}
                   style={{ marginBottom: "15px" }}
@@ -210,50 +225,61 @@ function PcrValues() {
                     </MenuItem>
                   ))}
                 </Select> */}
-            {/* </FormControl> */}
+          {/* </FormControl> */}
 
-                <SelectAntd placeholder={'Stocks'} onChange={handleFruitChange} style={{ width: "250px", marginTop: "15px"}} value={fruit || undefined}>
-                    {getdata.map((fruit_D, i) => (
-                      <Option key={i} value={fruit_D.name}>{fruit_D.name}</Option>
-                    ))}
-                  </SelectAntd>
+          <SelectAntd
+            placeholder={"Stocks"}
+            onChange={handleFruitChange}
+            style={{ width: "250px", marginTop: "15px" }}
+            value={fruit || undefined}
+          >
+            {getdata.map((fruit_D, i) => (
+              <Option key={i} value={fruit_D.name}>
+                {fruit_D.name}
+              </Option>
+            ))}
+          </SelectAntd>
 
-                <Search
-                  style={{
-                    fontSize: 2,
-                    color: "#1890ff",
-                    width: 250,
-                    marginBottom: 15,
-                    marginTop: "15px",
-                  }}
-                  placeholder="Search"
-                  allowClear
-                  enterButton="Search"
-                  size="default"
-                  onSearch={(value) => {
-                    setSearch_data(value);
-                  }}
-                />
+          <Search
+            style={{
+              fontSize: 2,
+              color: "#1890ff",
+              width: 250,
+              marginBottom: 15,
+              marginTop: "15px",
+            }}
+            placeholder="Search"
+            allowClear
+            enterButton="Search"
+            size="default"
+            onSearch={(value) => {
+              setSearch_data(value);
+            }}
+          />
         </Col>
       </Row>
 
-  
-        
-            <>
-            {/* <Skeleton size="large" title={false} paragraph={{rows: 20}} loading={loading} active> */}
-            {/* {(loading === true)?(<ReactLoading type={'spinningBubbles'} color={'#000'} height={'20%'} width={'6%'} className='loader' />) : ( */}
-            <Table
-              rowKey={(record) => record.id}
-              columns={columns}
-              dataSource={getdata}
-              pagination={{ ...pagination }}
-              onChange={handleTableChange}
-              loading={{ indicator: <div><Spin size="small" /></div>, spinning:loading}}
-            />
-            {/* )}  */}
-            {/* </Skeleton> */}
-          </>
-        
+      <>
+        {/* <Skeleton size="large" title={false} paragraph={{rows: 20}} loading={loading} active> */}
+        {/* {(loading === true)?(<ReactLoading type={'spinningBubbles'} color={'#000'} height={'20%'} width={'6%'} className='loader' />) : ( */}
+        <Table
+          rowKey={(record) => record.id}
+          columns={columns}
+          dataSource={getdata}
+          pagination={{ ...pagination }}
+          onChange={handleTableChange}
+          loading={{
+            indicator: (
+              <div>
+                <Spin size="small" />
+              </div>
+            ),
+            spinning: loading,
+          }}
+        />
+        {/* )}  */}
+        {/* </Skeleton> */}
+      </>
     </>
   );
 }

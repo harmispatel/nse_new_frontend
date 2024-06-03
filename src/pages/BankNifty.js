@@ -27,7 +27,6 @@ const BankNifty = () => {
   const [apiData, setApiData] = useState([]);
   const [loading, setLoading] = useState(true);
 
-
   useEffect(() => {
     document.title = "Banknifty";
     getLocalData();
@@ -36,7 +35,6 @@ const BankNifty = () => {
     const interval = setInterval(() => {
       getLocalData();
       getApiData();
-
     }, 10000);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -47,7 +45,15 @@ const BankNifty = () => {
     basePlus_put && putPcr_put && mainBuyConditionFunput();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [putStrike, callStrike, cepeDiffrent, basePlus, basePlus_put, callPcr, basePlus_put]);
+  }, [
+    putStrike,
+    callStrike,
+    cepeDiffrent,
+    basePlus,
+    basePlus_put,
+    callPcr,
+    basePlus_put,
+  ]);
 
   useEffect(() => {
     if (oiSetting && oiSettingPut) {
@@ -56,28 +62,27 @@ const BankNifty = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [oiSetting, oiSettingPut]);
 
-
-
   // API DATA
   async function getApiData() {
     await axios
       .get(BANKNIFTY_API)
       .then((json) => {
-        setApiData(json)
-        let time_stamp = json.data.records.timestamp;
+        // return console.log("json", json.data.data);
+        setApiData(json.data);
+        let time_stamp = json.data.data.records.timestamp;
         setTimeStamp(time_stamp);
 
-        let liveprices = json.data.records.underlyingValue;
+        let liveprices = json.data.data.records.underlyingValue;
         setLiveprice(liveprices);
         setLiveprice_put(liveprices);
 
-        let up_price = json.data.filtered.data.filter((val) => {
+        let up_price = json.data.data.filtered.data.filter((val) => {
           let r = val.strikePrice;
           return r >= liveprices;
         });
         setGraterThan(up_price);
 
-        let down_price = json.data.filtered.data.filter((val) => {
+        let down_price = json.data.data.filtered.data.filter((val) => {
           let r = val.strikePrice;
           return r <= liveprices;
         });
@@ -127,8 +132,8 @@ const BankNifty = () => {
         });
         setCEmax(CE_present_price);
 
-        const sum = json.data.filtered.CE.totOI;
-        const sum2 = json.data.filtered.PE.totOI;
+        const sum = json.data.data.filtered.CE.totOI;
+        const sum2 = json.data.data.filtered.PE.totOI;
         const PCR = sum2 / sum;
         setPcrValue(PCR);
 
@@ -161,7 +166,7 @@ const BankNifty = () => {
           if (val.option === "BANKNIFTY PE") {
             setPutPcr_put(val.set_pcr);
             setBasePlus_put(val.baseprice_plus);
-            setOiSettingPut(val.oi_total)
+            setOiSettingPut(val.oi_total);
           }
           return val;
         });
@@ -170,8 +175,7 @@ const BankNifty = () => {
 
   const strikePriceLogic = () => {
     if (apiData.length !== 0) {
-
-      let liveprices = apiData?.data?.records?.underlyingValue
+      let liveprices = apiData?.data?.records?.underlyingValue;
 
       let up_price = apiData?.data.filtered.data.filter((val) => {
         let v1 = val.strikePrice;
@@ -183,94 +187,97 @@ const BankNifty = () => {
       });
 
       // NEW STRIKE PRICE CONDITION
-      const up_first_total_oi = (up_price[0].PE.changeinOpenInterest + up_price[0].PE.openInterest) - (up_price[0].CE.changeinOpenInterest + up_price[0].CE.openInterest)
-      const down_first_total_oi = (down_price.slice(-1)[0].PE.changeinOpenInterest + down_price.slice(-1)[0].PE.openInterest) - (down_price.slice(-1)[0].CE.changeinOpenInterest + down_price.slice(-1)[0].CE.openInterest)
+      const up_first_total_oi =
+        up_price[0].PE.changeinOpenInterest +
+        up_price[0].PE.openInterest -
+        (up_price[0].CE.changeinOpenInterest + up_price[0].CE.openInterest);
+      const down_first_total_oi =
+        down_price.slice(-1)[0].PE.changeinOpenInterest +
+        down_price.slice(-1)[0].PE.openInterest -
+        (down_price.slice(-1)[0].CE.changeinOpenInterest +
+          down_price.slice(-1)[0].CE.openInterest);
       // CALL
-      const base_Price_down = []
-      const Total_oi_down_arr = []
+      const base_Price_down = [];
+      const Total_oi_down_arr = [];
       for (const val of down_price.slice(-4).reverse()) {
         var PE_oi_down = val.PE.openInterest + val.PE.changeinOpenInterest;
         var CE_oi_down = val.CE.openInterest + val.CE.changeinOpenInterest;
-        var Total_oi_down = PE_oi_down - CE_oi_down
-        Total_oi_down_arr.push(Total_oi_down)
+        var Total_oi_down = PE_oi_down - CE_oi_down;
+        Total_oi_down_arr.push(Total_oi_down);
         if (Total_oi_down > oiSetting) {
           if (Math.abs(Total_oi_down_arr[0]) === Math.abs(Total_oi_down)) {
             if (up_first_total_oi < Math.abs(Total_oi_down_arr[0])) {
               base_Price_down.push(val);
               break;
-            }else{
-              continue
+            } else {
+              continue;
             }
           }
-          base_Price_down.push(val)
-          break
+          base_Price_down.push(val);
+          break;
         }
-      };
-      setCallStrike(base_Price_down)
+      }
+      setCallStrike(base_Price_down);
 
       // PUT
-      const base_Price_up = []
-      const Total_oi_up_arr = []
+      const base_Price_up = [];
+      const Total_oi_up_arr = [];
       for (const val of up_price.slice(0, 5)) {
         var PE_oi_up = val.PE.openInterest + val.PE.changeinOpenInterest;
         var CE_oi_up = val.CE.openInterest + val.CE.changeinOpenInterest;
-        var Total_oi_up = PE_oi_up - CE_oi_up
-        Total_oi_up_arr.push(Total_oi_up)
+        var Total_oi_up = PE_oi_up - CE_oi_up;
+        Total_oi_up_arr.push(Total_oi_up);
         if (Math.abs(Total_oi_up) > Math.abs(oiSettingPut)) {
           if (Math.abs(Total_oi_up_arr[0]) === Math.abs(Total_oi_up)) {
             if (down_first_total_oi < Math.abs(Total_oi_up_arr[0])) {
               base_Price_up.push(val);
               break;
-            }else{ 
-              continue
+            } else {
+              continue;
             }
           }
-          base_Price_up.push(val)
-          break
+          base_Price_up.push(val);
+          break;
         }
-      };
-      setPutStrike(base_Price_up)
+      }
+      setPutStrike(base_Price_up);
     }
-  }
+  };
 
   const [basePricePlus, setBasePricePlus] = useState(0);
   const [basePricePlusPut, setBasePricePlusPut] = useState(0);
 
-
   const mainBuyConditionFun = () => {
-
     callStrike.map((val) => {
       if (pcrValue >= callPcr) {
         let basePricePlus = val.strikePrice + basePlus;
         let base_a = basePricePlus - 15;
-        setBasePricePlus(basePricePlus)
+        setBasePricePlus(basePricePlus);
         if (base_a <= liveprice && liveprice <= basePricePlus) {
-          console.log('Successfully buy');
+          console.log("Successfully buy");
         }
       } else {
-        setBasePricePlus(0)
+        setBasePricePlus(0);
       }
       return val;
     });
   };
 
   const mainBuyConditionFunput = () => {
-
     putStrike.map((val) => {
       if (pcrValue <= putPcr_put) {
         let basePricePlus = val.strikePrice + basePlus_put;
         let base_a = basePricePlus + 15;
-        setBasePricePlusPut(basePricePlus)
+        setBasePricePlusPut(basePricePlus);
         if (base_a <= liveprice_put && liveprice_put <= basePricePlus) {
-          console.log('Successfully buy');
+          console.log("Successfully buy");
         }
       } else {
-        setBasePricePlusPut(0)
+        setBasePricePlusPut(0);
       }
       return val;
     });
   };
-
 
   return (
     <>
@@ -291,13 +298,14 @@ const BankNifty = () => {
             </span>
           </div>
 
-          {basePricePlus || basePricePlusPut ?
+          {basePricePlus || basePricePlusPut ? (
             <div className="col-4 d-inline p-2 bg-success text-white">
-              {basePricePlus ? `CE: below ${basePricePlus}` : ''}
-              {basePricePlusPut ? ` PE: above ${basePricePlusPut}` : ''}
+              {basePricePlus ? `CE: below ${basePricePlus}` : ""}
+              {basePricePlusPut ? ` PE: above ${basePricePlusPut}` : ""}
             </div>
-            : ''
-          }
+          ) : (
+            ""
+          )}
 
           <div className="col-1 d-inline p-2 bg-success text-white float-right">
             PCR = {Number(pcrValue).toFixed(2)}
@@ -306,7 +314,6 @@ const BankNifty = () => {
       </div>
 
       <div id="chartContainer">
-
         <Spin size="large" style={{ marginTop: "70px" }} spinning={loading}>
           <Table className="mt-3" id="chartContainer">
             <thead
@@ -342,11 +349,12 @@ const BankNifty = () => {
                         backgroundColor: "#ECF0F1 ",
                       }}
                     >
-                      {(data?.PE?.openInterest +
+                      {(
+                        data?.PE?.openInterest +
                         data?.PE?.changeinOpenInterest -
                         (data?.CE?.openInterest +
-                          data?.CE?.changeinOpenInterest)).toFixed(0)}
-
+                          data?.CE?.changeinOpenInterest)
+                      ).toFixed(0)}
                       (
                       {(
                         ((data?.CE?.openInterest +
@@ -356,7 +364,6 @@ const BankNifty = () => {
                         100
                       ).toFixed(2)}
                       %)
-
                     </td>
                     <td
                       style={{
@@ -408,14 +415,23 @@ const BankNifty = () => {
                         backgroundColor: "#ECF0F1 ",
                       }}
                     >
-                      {(+(data?.PE?.openInterest + data?.PE?.changeinOpenInterest) - (data?.CE?.openInterest + data?.CE?.changeinOpenInterest)).toFixed(0)}
-
+                      {(
+                        +(
+                          data?.PE?.openInterest +
+                          data?.PE?.changeinOpenInterest
+                        ) -
+                        (data?.CE?.openInterest +
+                          data?.CE?.changeinOpenInterest)
+                      ).toFixed(0)}
                       (
                       {(
-                        ((data?.CE?.openInterest + data?.CE?.changeinOpenInterest) /
-                          (data?.PE?.openInterest + data?.PE?.changeinOpenInterest)) * 100 ).toFixed(2)} 
+                        ((data?.CE?.openInterest +
+                          data?.CE?.changeinOpenInterest) /
+                          (data?.PE?.openInterest +
+                            data?.PE?.changeinOpenInterest)) *
+                        100
+                      ).toFixed(2)}
                       %)
-
                     </td>
                     <td
                       style={{
@@ -463,7 +479,6 @@ const BankNifty = () => {
           </Table>
         </Spin>
       </div>
-
     </>
   );
 };

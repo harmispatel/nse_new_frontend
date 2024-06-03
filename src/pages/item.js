@@ -27,20 +27,20 @@ function Item() {
   async function fetchData() {
     await axios
       .get(
-        "https://www.nseindia.com/api/option-chain-indices?symbol=" +
+        "http://192.168.1.116/shareMarket/index.php/api/getNiftyJson?symbol=" +
           `${selectense}`
       )
 
       .then((json) => {
-        let q = json.data.records.underlyingValue;
+        let q = json.data.data.records.underlyingValue;
         setD2(q);
 
-        let expriy_date = json.data.records.expiryDates;
+        let expriy_date = json.data.data.records.expiryDates;
         setExpriy_date(expriy_date);
-        setOi(json.data.records.data);
-        setSpot(json.data.records.timestamp);
-        const sum = json.data.filtered.CE.totOI;
-        const sum2 = json.data.filtered.PE.totOI;
+        setOi(json.data.data.records.data);
+        setSpot(json.data.data.records.timestamp);
+        const sum = json.data.data.filtered.CE.totOI;
+        const sum2 = json.data.data.filtered.PE.totOI;
         const PCR = sum2 / sum;
         setPcrValue(PCR);
         setLoading(false);

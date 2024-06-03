@@ -1,4 +1,5 @@
 export const LOCAL_BASE_URL = "https://zerodha.harmistechnology.com";
+export const LOCAL_BASE_STOCK_URL = "http://192.168.1.116/shareMarket/index.php/api/getStokList";
 
 // export const LOCAL_BASE_URL = "http://192.168.1.235:8001";      
 
@@ -15,7 +16,3 @@ export const live_put = LOCAL_BASE_URL + "/liveSettings";
 export const SELECT_STOCK_NAME = LOCAL_BASE_URL + "/callStock";
 
 export const SELECT_STOCK_NAME_PUT = LOCAL_BASE_URL + "/putStock";
-
-
-
-

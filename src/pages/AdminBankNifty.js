@@ -141,26 +141,26 @@ const AdminBankNifty = () => {
     await axios
       .get(BANKNIFTY_API)
       .then((json) => {
-        let time_stamp = json.data.records.timestamp;
+        let time_stamp = json.data.data.records.timestamp;
         setTimeStamp(time_stamp);
         // < ---------------- Liveprice -------------------------------->
-        let liveprices = json.data.records.underlyingValue;
+        let liveprices = json.data.data.records.underlyingValue;
         setLiveprice(liveprices);
         setLiveprice_put(liveprices);
         // < ---------------- GraterThan -------------------------------->
-        let up_price = json.data.filtered.data.filter((val) => {
+        let up_price = json.data.data.filtered.data.filter((val) => {
           let r = val.strikePrice;
           return r >= liveprices;
         });
         setGraterThan(up_price);
         // < ---------------- LessThanLive -------------------------------->
-        let down_price = json.data.filtered.data.filter((val) => {
+        let down_price = json.data.data.filtered.data.filter((val) => {
           let r = val.strikePrice;
           return r <= liveprices;
         });
         setLessThanLive(down_price);
         // < ------------------------------------------------>
-        let filterddata = json.data.filtered.data;
+        let filterddata = json.data.data.filtered.data;
         setFilteredData(filterddata);
         // < ------------------------------------------------>
         let PE_CE_SUM = down_price.slice(-5).map((val) => {
@@ -219,8 +219,8 @@ const AdminBankNifty = () => {
           return ab;
         });
         // < ----------------- PCR Value ------------------------------->
-        const sum = json.data.filtered.CE.totOI;
-        const sum2 = json.data.filtered.PE.totOI;
+        const sum = json.data.data.filtered.CE.totOI;
+        const sum2 = json.data.data.filtered.PE.totOI;
         const PCR = sum2 / sum;
         setPcrValue(PCR);
         // < ----------------- CE PE Diffrent ------------------------------->

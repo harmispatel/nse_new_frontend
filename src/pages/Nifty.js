@@ -33,12 +33,12 @@ const Nifty = () => {
     getLocalData();
     getApiData();
     
-    const interval = setInterval(() => {
-      getLocalData();
-      getApiData();
+    // const interval = setInterval(() => {
+    //   getLocalData();
+    //   getApiData();
 
-    }, 10000);
-    return () => clearInterval(interval);
+    // }, 10000);
+    // return () => clearInterval(interval);
   }, []);
 
 
@@ -64,21 +64,22 @@ const Nifty = () => {
     await axios
       .get(NIFTY_API)
       .then((json) => { 
-        setApiData(json)
-        let time_stamp = json.data.records.timestamp;
+        setApiData(json.data)
+        let time_stamp = json.data.data.records.timestamp;
         setTimeStamp(time_stamp);
         // < ---------------- Liveprice -------------------------------->
-        let liveprices = json.data.records.underlyingValue;
+        let liveprices = json.data.data.records.underlyingValue;
         setLiveprice(liveprices);
         setLiveprice_put(liveprices);
+        // console.log("json.data.filtered.data",json.data.filtered.data)
         // < ---------------- GraterThan -------------------------------->
-        let up_price = json.data.filtered.data.filter((val) => {
+        let up_price = json.data.data.filtered.data.filter((val) => {
           let r = val.strikePrice;
           return r >= liveprices;
         });
         setGraterThan(up_price);
         // < ---------------- LessThanLive -------------------------------->
-        let down_price = json.data.filtered.data.filter((val) => {
+        let down_price = json.data.data.filtered.data.filter((val) => {
           let r = val.strikePrice;
           return r <= liveprices;
         });
@@ -129,8 +130,8 @@ const Nifty = () => {
         setCEmax(CE_present_price);
 
         // < ----------------- PCR Value ------------------------------->
-        const sum = json.data.filtered.CE.totOI;
-        const sum2 = json.data.filtered.PE.totOI;
+        const sum = json.data.data.filtered.CE.totOI;
+        const sum2 = json.data.data.filtered.PE.totOI;
         const PCR = sum2 / sum;
         setPcrValue(PCR);
         // < ----------------- CE PE Diffrent ------------------------------->
